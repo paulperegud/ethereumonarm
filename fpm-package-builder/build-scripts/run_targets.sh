@@ -22,31 +22,31 @@ export LC_NUMERIC=C
 printf "\n🐳 %b\n\n" "${BLUE}Running target '${GREEN}${TARGET_NAME}${BLUE}' via Docker...${RESET}"
 
 RESULT_FILE=$(mktemp)
-total_start=$(date +%s.%N)
+total_start=$(date +%s)
 
 for dir in $DIRS_TO_RUN; do
-    start=$(date +%s.%N)
+    start=$(date +%s)
     printf "📦 ${BLUE}Building${RESET} %s (Target: ${GREEN}${TARGET_TO_RUN}${RESET})\n" "$dir"
-    
+
     if docker run --rm --platform "$DOCKER_PLATFORM" \
         -v "$PWD":/workspace -w /workspace \
         -v /var/run/docker.sock:/var/run/docker.sock \
         "$DOCKER_IMAGE" \
         make -s -C "$dir" "$TARGET_TO_RUN"; then
-        
-        end=$(date +%s.%N)
-        elapsed=$(printf "%.2f" "$(echo "$end - $start" | bc)")
+
+        end=$(date +%s)
+        elapsed=$(echo "$end - $start" | bc)
         printf "   ✅ ${GREEN}Success${RESET} (%s) — ${YELLOW}%ss${RESET}\n\n" "$dir" "$elapsed"
         echo "$dir|SUCCESS|$elapsed" >> "$RESULT_FILE"
     else
-        end=$(date +%s.%N)
+        end=$(date +%s)
         elapsed=$(printf "%.2f" "$(echo "$end - $start" | bc)")
         printf "   ❌ ${RED}Error${RESET} (%s) — ${YELLOW}%ss${RESET}\n\n" "$dir" "$elapsed"
         echo "$dir|ERROR|$elapsed" >> "$RESULT_FILE"
     fi
 done
 
-total_end=$(date +%s.%N)
+total_end=$(date +%s)
 total_elapsed=$(printf "%.2f" "$(echo "$total_end - $total_start" | bc)")
 
 printf "⏱  ${BLUE}Total time: ${YELLOW}%ss${RESET}\n\n" "$total_elapsed"
@@ -56,10 +56,10 @@ if [ -s "$RESULT_FILE" ]; then
     printf "%-65s %-10s %-10s\n" "Directory" "Result" "Time(s)"
     printf "%-65s %-10s %-10s\n" "-----------------------------------------------------------------" "--------" "--------"
     while IFS="|" read -r dir result time; do
-        if [ "$result" = "SUCCESS" ]; then 
+        if [ "$result" = "SUCCESS" ]; then
             color="${GREEN}"
             symbol="✅"
-        else 
+        else
             color="${RED}"
             symbol="❌"
         fi
