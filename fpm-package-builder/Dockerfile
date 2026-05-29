@@ -46,7 +46,7 @@ RUN add-apt-repository -y ppa:longsleep/golang-backports && \
 # 4. Install Rust (Rustup)
 ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
-    PATH=/usr/local/cargo/bin:$PATH
+    PATH=/usr/local/cargo/bin:/root/.local/share/pnpm/bin:$PATH
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable && \
     rustup target add aarch64-unknown-linux-gnu
@@ -55,6 +55,9 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --de
 RUN mkdir -p /usr/local/cargo && \
     echo '[target.aarch64-unknown-linux-gnu]\nlinker = "aarch64-linux-gnu-gcc"' > /usr/local/cargo/config
 
+# 5. Check PATH
+RUN echo $PATH
+
 # 5. Install Node.js 24
 RUN mkdir -p /etc/apt/keyrings && \
     curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
@@ -62,7 +65,6 @@ RUN mkdir -p /etc/apt/keyrings && \
     apt-get update && \
     apt-get install -y nodejs && \
     npm install -g yarn pnpm && \
-    pnpm config --global set only-built-dependencies esbuild && \
     rm -rf /var/lib/apt/lists/*
 
 # 6. Install LLVM 19
